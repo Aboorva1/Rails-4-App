@@ -1,0 +1,87 @@
+<h1 class='text-success'>Listing students</h1>
+<%= form_tag students_export_path(format: 'csv'), method: :get do %>
+<table id="students" class="cell-border stripe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Name <input type="text" class="form-control form-control-sm column-search" data-column="1" placeholder="Search"></th></th>
+      <th>Register no <input type="text" class="form-control form-control-sm column-search" data-column="2" placeholder="Search"></th></th>
+      <th>Maths <input type="text" class="form-control form-control-sm column-search" data-column="3" placeholder="Search"></th></th>
+      <th>Science <input type="text" class="form-control form-control-sm column-search" data-column="4" placeholder="Search"></th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @students.each do |student| %>
+      <tr>
+       <td><%= check_box_tag "selected[]", student.id %></td>
+        <td><%= student.name %></td>
+        <td><%= student.register_no %></td>
+        <td><%= student.maths %></td>
+        <td><%= student.science %></td>
+        <td><%= link_to 'Show', student %></td>
+        <td><%= link_to 'Edit', edit_student_path(student) %></td>
+        <td><%= link_to 'Destroy', student, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+  
+</table>
+ <%= submit_tag "Export Selected Rows" %>
+<% end %>
+<br>
+
+<%= link_to 'New Student', new_student_path %>
+
+
+
+
+<script>
+  $(document).ready( function () {
+    var table = $('#students').DataTable( {
+      processing: true,
+      // serverSide: true,
+      // ajax: '/students.json',
+      // columns: [
+      //   {data: 'name', name: 'name'},
+      //   {data: 'register_no', name: 'register_no'},
+      //   {data: 'maths', name: 'maths'},
+      //   {data: 'science', name: 'science'}
+      // ],
+      searching: true,
+      dom: 'Bfrtip',
+      buttons: [
+        'copy', 'excel', 'pdf', 'print'
+      ],
+    columnDefs: [
+      {
+        "targets": '_all',
+        "className": "dt-center",
+      }
+    ]
+  });
+  $('.column-search').on('keyup', function() {
+    table.column($(this).data('column'))
+         .search($(this).val())
+         .draw();
+  });
+  // $('.column-search').on('keyup change', function () {
+  //   var i = $(this).data('column');
+  //   var value = $(this).val();
+  //   table.column(i).search(value).draw();
+  // });
+  
+  $('form').on('submit', function() {
+      var selected = $('#students input[type="checkbox"]:checked').map(function() {
+        return $(this).val();
+      }).get().join(',');
+      $(this).attr('action', $(this).attr('action') + '?selected=' + selected);
+    });
+    
+});
+
+</script>
+
