@@ -2,6 +2,7 @@ Rails4App::Application.routes.draw do
   resources :students
   root "students#index"
   post 'students/export', to: 'students#export'
+  get 'students/search', to: 'students#search'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

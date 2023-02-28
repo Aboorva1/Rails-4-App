@@ -1,4 +1,4 @@
-require 'csv'
+require 'Time'
 class StudentsController < ApplicationController
   before_action :set_student, only: [:show, :edit, :update, :destroy]
 
@@ -12,6 +12,15 @@ class StudentsController < ApplicationController
       format.json {render json: students}
     end
   end
+  
+  def search
+    column = params[:column]
+    query = params[:query]
+    students = Student.where("#{column} LIKE ?", "%#{query}%")
+
+    render json: students
+  end
+
   def export
     ids = params[:selected].split(',')
     @selected_students = Student.where(id: ids)
