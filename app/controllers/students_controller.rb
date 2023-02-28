@@ -1,3 +1,4 @@
+require 'csv'
 class StudentsController < ApplicationController
   before_action :set_student, only: [:show, :edit, :update, :destroy]
 
@@ -11,19 +12,19 @@ class StudentsController < ApplicationController
       format.json {render json: students}
     end
   end
-  
-  def search 
-
-  end
-
   def export
     ids = params[:selected].split(',')
     @selected_students = Student.where(id: ids)
     respond_to do |format|
       format.html
       format.csv { 
-        send_data @selected_students.to_csv(['name', 'register_no', 'maths', 'science'])
-      }
+        csv_data = @selected_students.to_csv(['name', 'register_no', 'maths', 'science'])
+        file_path = 'students.csv'
+        File.open(file_path, 'a') do |file|
+        file.write(csv_data)
+      end 
+      send_data csv_data
+    }
     end
   end
 

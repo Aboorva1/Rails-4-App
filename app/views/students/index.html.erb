@@ -1,5 +1,5 @@
 <h1 class='text-success'>Listing students</h1>
-<%= form_tag students_export_path(format: 'csv'), method: :get do %>
+<%= form_tag students_export_path(format: 'csv'), method: :post do %>
 <table id="students" class="cell-border stripe">
   <thead>
     <tr>
@@ -42,9 +42,6 @@
 <script>
   $(document).ready( function () {
     var table = $('#students').DataTable( {
-      processing: true,
-      
-      searching: true,
       dom: 'Bfrtip',
       buttons: [
         'copy', 'excel', 'pdf', 'print'
@@ -61,11 +58,6 @@
          .search($(this).val())
          .draw();
   });
-  // $('.column-search').on('keyup change', function () {
-  //   var i = $(this).data('column');
-  //   var value = $(this).val();
-  //   table.column(i).search(value).draw();
-  // });
   
   $('form').on('submit', function() {
       var selected = $('#students input[type="checkbox"]:checked').map(function() {
