@@ -4,10 +4,10 @@
   <thead>
     <tr>
       <th></th>
-      <th>Name </th>
-      <th>Register no </th>
-      <th>Maths </th>
-      <th>Science </th>
+      <th>Name <input type="text" class="form-control form-control-sm column-search" data-column="1" placeholder="Search"></th></th>
+      <th>Register no <input type="text" class="form-control form-control-sm column-search" data-column="2" placeholder="Search"></th></th>
+      <th>Maths <input type="text" class="form-control form-control-sm column-search" data-column="3" placeholder="Search"></th></th>
+      <th>Science <input type="text" class="form-control form-control-sm column-search" data-column="4" placeholder="Search"></th></th>
       <th></th>
       <th></th>
       <th></th>
@@ -28,7 +28,7 @@
       </tr>
     <% end %>
   </tbody>
-   <tfoot>
+   <%# <tfoot>
     <tr>
       <th></th>
       <th><input type="text" class="form-control form-control-sm column-search" data-column="1" placeholder="Search"></th>
@@ -39,7 +39,7 @@
       <th></th>
       <th></th>
     </tr>
-  </tfoot>
+  </tfoot> %>
 </table>
  <%= submit_tag "Export Selected Rows" %>
 <% end %>
@@ -62,18 +62,27 @@
         "targets": '_all',
         "className": "dt-center",
       }
-    ],
-    "processing": true,
-      "serverSide": true,
-      "ajax": {
-        "url": "<%= students_search_path %>",
-        "data": function(d) {
-          d.column = $('input.column-search').index($(this));
-          d.query = this.value;
-        }
-      }
+    ]
+    // "processing": true,
+    //   "serverSide": true,
+    //   "ajax": {
+    //     "url": "<%= students_search_path %>",
+    //     "data": function(d) {
+    //       d.column = $('input.column-search').index($(this));
+    //       d.query = this.value;
+    //     }
+    //   }
   });
-  
+  $('.column-search').on('keyup', function() {
+    table.column($(this).data('column'))
+         .search($(this).val())
+         .draw();
+  });
+  // $('.column-search').on('keyup change', function () {
+  //   var i = $(this).data('column');
+  //   var value = $(this).val();
+  //   table.column(i).search(value).draw();
+  // });
   
   $('form').on('submit', function() {
       var selected = $('#students input[type="checkbox"]:checked').map(function() {
