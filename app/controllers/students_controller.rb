@@ -28,7 +28,7 @@ class StudentsController < ApplicationController
       format.html
       format.csv { 
         csv_data = @selected_students.to_csv(['name', 'register_no', 'maths', 'science'])
-        file_path = 'students.csv'
+        file_path = 'Export/'+Time.now.strftime("%m-%d-%Y_%H%M%S")+'students.csv'
         File.open(file_path, 'a') do |file|
         file.write(csv_data)
       end 
