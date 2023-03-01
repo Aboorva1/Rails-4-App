@@ -9,17 +9,37 @@ class StudentsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json {render json: students}
+      format.json {render json: @students}
     end
   end
-  
-  def search
-    column = params[:column]
-    query = params[:query]
-    students = Student.where("#{column} LIKE ?", "%#{query}%")
 
-    render json: students
+  def search
+    limit = params[:length].to_i
+    offset = params[:start].to_i
+    search_value = params[:search][:value]
+    if search_value.present? 
+      @students = Student.where("name LIKE ? OR register_no LIKE ? OR maths LIKE ? OR science LIKE ?", "%#{search_value}%", "%#{search_value}%", "%#{search_value}%", "%#{search_value}%")
+                          .order("#{sort_column} #{sort_direction}").limit(limit).offset(offset)
+    else
+      @students = Student.order("#{sort_column} #{sort_direction}").limit(limit).offset(offset)
+    end
+      data = []
+      @students.each do |record|
+        data << [
+          record["name"],
+          record["register_no"],
+          record["maths"],
+          record["science"]
+        ]
+      end
+      render json: {
+        draw: params[:draw].to_i,
+        recordsTotal: Student.count,
+        recordsFiltered: @students.count,
+        data: data
+      }
   end
+ 
 
   def export
     ids = params[:selected].split(',')
@@ -100,5 +120,15 @@ class StudentsController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def student_params
       params.require(:student).permit(:name, :register_no, :maths, :science)
+    end
+
+    def sort_column
+      keys = (0..5).to_a
+      values = %w[name register_no maths science]
+      hash = Hash[keys.zip(values)]
+      hash.has_key?(params[:order]['0'][:column].to_i) ? hash[params[:order]['0'][:column].to_i] : 'id'
+    end
+    def sort_direction
+      %w[asc desc].include?(params[:order]['0'][:dir]) ? params[:order]['0'][:dir].upcase : 'ASC'
     end
 end
