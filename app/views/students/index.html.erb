@@ -3,43 +3,19 @@
 <table id="students" class="cell-border stripe">
   <thead>
     <tr>
-      <th></th>
-      <th>Name <input type="text" class="form-control form-control-sm column-search" data-column="1" placeholder="Search"></th></th>
-      <th>Register no <input type="text" class="form-control form-control-sm column-search" data-column="2" placeholder="Search"></th></th>
-      <th>Maths <input type="text" class="form-control form-control-sm column-search" data-column="3" placeholder="Search"></th></th>
-      <th>Science <input type="text" class="form-control form-control-sm column-search" data-column="4" placeholder="Search"></th></th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>Name</th>
+      <th>Register no</th>
+      <th>Maths</th>
+      <th>Science</th>
     </tr>
   </thead>
+  <thead>
+    <th><input type="text" id="search-name" data-column="0" placeholder="Search name"></th>
+    <th><input type="text" id="search-register-no" data-column="1" placeholder="Search register number"></th>
+    <th><input type="text" id="search-maths" data-column="2" placeholder="Search marks"></th>
+    <th><input type="text" id="search-science" data-column="3" placeholder="Search marks"></th>
+  </thead>
 
-  <tbody>
-    <% @students.each do |student| %>
-      <tr>
-       <td><%= check_box_tag "selected[]", student.id %></td>
-        <td><%= student.name %></td>
-        <td><%= student.register_no %></td>
-        <td><%= student.maths %></td>
-        <td><%= student.science %></td>
-        <td><%= link_to 'Show', student %></td>
-        <td><%= link_to 'Edit', edit_student_path(student) %></td>
-        <td><%= link_to 'Destroy', student, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
-   <%# <tfoot>
-    <tr>
-      <th></th>
-      <th><input type="text" class="form-control form-control-sm column-search" data-column="1" placeholder="Search"></th>
-      <th><input type="text" class="form-control form-control-sm column-search" data-column="2" placeholder="Search"></th>
-      <th><input type="text" class="form-control form-control-sm column-search" data-column="3" placeholder="Search"></th>
-      <th><input type="text" class="form-control form-control-sm column-search" data-column="4" placeholder="Search"></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </tfoot> %>
 </table>
  <%= submit_tag "Export Selected Rows" %>
 <% end %>
@@ -49,49 +25,60 @@
 
 
 
-
 <script>
   $(document).ready( function () {
     var table = $('#students').DataTable( {
+      
       dom: 'Bfrtip',
       buttons: [
         'copy', 'excel', 'pdf', 'print'
       ],
-    columnDefs: [
-      {
-        "targets": '_all',
-        "className": "dt-center",
+      columnDefs: [
+        {
+          "targets": '_all',
+          "className": "dt-center"
+        }
+      ], 
+      serverSide: true,
+      processing: true,
+      ajax: {
+        url: '/students/search',
+        type: 'POST',
+        data: function(d) {
+          var searchValues = {
+            name: $('#search-name').val(),
+            register_no: $('#search-register-no').val(),
+            maths: $('#search-maths').val(),
+            science: $('#search-science').val()
+          };
+        var searchColumns = Object.keys(searchValues).filter(function(key) {
+          return searchValues[key] !== '';
+        });
+        d.columns = searchColumns.map(function(column) {
+          return { data: column, search: { value: searchValues[column] } };
+        });
       }
-    ]
-    // "processing": true,
-    //   "serverSide": true,
-    //   "ajax": {
-    //     "url": "<%= students_search_path %>",
-    //     "data": function(d) {
-    //       d.column = $('input.column-search').index($(this));
-    //       d.query = this.value;
-    //     }
-    //   }
-  });
-  $('.column-search').on('keyup', function() {
-    table.column($(this).data('column'))
-         .search($(this).val())
-         .draw();
-  });
-  // $('.column-search').on('keyup change', function () {
-  //   var i = $(this).data('column');
-  //   var value = $(this).val();
-  //   table.column(i).search(value).draw();
-  // });
-  
-  $('form').on('submit', function() {
+      } ,
+      columns: [
+        { 'name': 'name' },
+        { 'name': 'register_no' },
+        { 'name': 'maths' },
+        { 'name': 'science' }
+      ]
+    });
+ 
+    $('#search-name, #search-register-no, #search-maths, #search-science' ).on('keyup', function() {
+      var columnNumber = $(this).data('column');
+      console.log(columnNumber);
+      table.column(columnNumber).search(this.value).draw();
+    });
+
+    $('form').on('submit', function() {
       var selected = $('#students input[type="checkbox"]:checked').map(function() {
         return $(this).val();
       }).get().join(',');
       $(this).attr('action', $(this).attr('action') + '?selected=' + selected);
     });
-    
-});
-
+  });
 </script>
 

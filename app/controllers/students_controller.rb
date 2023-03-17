@@ -16,29 +16,40 @@ class StudentsController < ApplicationController
   def search
     limit = params[:length].to_i
     offset = params[:start].to_i
-    search_value = params[:search][:value]
-    if search_value.present? 
-      @students = Student.where("name LIKE ? OR register_no LIKE ? OR maths LIKE ? OR science LIKE ?", "%#{search_value}%", "%#{search_value}%", "%#{search_value}%", "%#{search_value}%")
-                          .order("#{sort_column} #{sort_direction}").limit(limit).offset(offset)
-    else
-      @students = Student.order("#{sort_column} #{sort_direction}").limit(limit).offset(offset)
-    end
-      data = []
-      @students.each do |record|
-        data << [
-          record["name"],
-          record["register_no"],
-          record["maths"],
-          record["science"]
-        ]
+
+    column_searches = []
+    if params[:columns].present?
+      params[:columns].each do |index, column|
+        search_term = column[:search][:value].strip
+        column_name = column[:data]
+        column_searches << "#{column_name} LIKE '%#{search_term}%'" unless search_term.blank?
       end
-      render json: {
-        draw: params[:draw].to_i,
-        recordsTotal: Student.count,
-        recordsFiltered: @students.count,
-        data: data
-      }
+      search_conditions = column_searches.join(" AND ")
+      @students = Student.where(search_conditions)
+                       .order("#{sort_column} #{sort_direction}")
+    else
+      @students = Student.order("#{sort_column} #{sort_direction}")
+    end
+    @student_count = @students.count
+    @students = @students.limit(limit).offset(offset)
+                       
+    data = []
+    @students.each do |record|
+      data << [
+        record["name"],
+        record["register_no"],
+        record["maths"],
+        record["science"]
+      ]
+    end
+    render json: {
+      draw: params[:draw].to_i,
+      recordsTotal: Student.count,
+      recordsFiltered: @student_count,
+      data: data
+    }
   end
+  
  
 
   def export
